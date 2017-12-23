@@ -1,0 +1,1 @@
+select * from msdb.dbo.sysjobs where job_id = <Guid>
