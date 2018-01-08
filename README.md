@@ -16,6 +16,9 @@ Operational Systems:
 * Windows;
 * Linux;
 
+Others:
+* AWS;
+
 # About
 
 This scripts has been created by me, friends and collect on the Internet, I never bothored in add the source of the script before because I only use for some specific case, and now I regret this behaviour :).
