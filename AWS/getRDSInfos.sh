@@ -40,7 +40,6 @@ if [ "$INSTANCE" ];then
 			while IFS='' read -r line || [[ -n "$line" ]]; do
 			    if [[ "$line" == *"output"* ]]; then
 				   	OUTPUT=$(cut -d "=" -f 2 <<< "$line" | sed 's/ //g')
-				   	echo "$VAR"
 				   	break
 				fi
 			done < "$CONFIGFILE"
@@ -55,7 +54,6 @@ if [ "$INSTANCE" ];then
 		while IFS='' read -r line || [[ -n "$line" ]]; do
 		    if [[ "$line" == *"region"* ]]; then
 			   	REGION=$(cut -d "=" -f 2 <<< "$line" | sed 's/ //g')
-			   	echo "$VAR"
 			   	break
 			fi
 		done < "$CONFIGFILE"
