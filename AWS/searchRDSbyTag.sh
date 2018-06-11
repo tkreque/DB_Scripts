@@ -5,10 +5,11 @@
 #				AWS RDS search by Tag			#
 #	Created by - Thiago Reque					#
 #			Date: 			15/01/2018			#
-#			Last changed:	15/01/2018			#
+#			Last changed:	07/05/2018			#
 #												#
 #	Change log:									#
 #		- Created the script					#
+#		- Adjust Search for multi-values		#
 #												#
 #################################################
 
@@ -16,7 +17,7 @@
 CONFIGFILE="$HOME/.aws/config"
 
 # Ask the Tag value
-echo "What is the TAG you're looking for? (One word only :/)"
+echo "What is the TAG you're looking for?"
 read TAGVALUE
 
 # Ask the format or gets the default
@@ -64,6 +65,7 @@ read PROFILE
 if [ ! $PROFILE ]; then
 	PROFILE="default"
 fi
+echo ""
 
 QUERYTEMP="aws rds describe-db-instances --query 'DBInstances[*].{InstanceName:DBInstanceIdentifier}' --output text --region $REGION --profile $PROFILE"
 for RDS  in  $(eval "$QUERYTEMP"); do
@@ -73,40 +75,44 @@ for RDS  in  $(eval "$QUERYTEMP"); do
 	ARN=$(eval "$QUERYAUX")
 
 	QUERYTAG="aws rds list-tags-for-resource --resource-name $ARN --output text --region $REGION --profile $PROFILE"
-	for TAG in $(eval "$QUERYTAG"); do
-		if [[ "$TAG" == *"$TAGVALUE"* ]]; then
-			echo ""
-		    echo "======================================== INFOS : $RDS"
-		    echo ""
+	TAG=$(eval "$QUERYTAG")
+	
+	TAG=${TAG^^}
+	TAGVALUE=${TAGVALUE^^}
+	
+	if [[ "$TAG" == *"$TAGVALUE"* ]]; then
+		echo ""
+	    echo "======================================== INFOS : $RDS"
+	    echo ""
 
-		    # Query to list the RDS information
-			QUERY01="aws rds describe-db-instances --query 'DBInstances[?DBInstanceIdentifier==\`$RDS\`].{
-				InstanceName:DBInstanceIdentifier,
-				Status:DBInstanceStatus,
-				RdsEngine:Engine,
-				RdsVersion:EngineVersion,
-				MultiAZ:MultiAZ,
-				AZ:AvailabilityZone,
-				Storage:StorageType,
-				Size:AllocatedStorage,
-				OptionParamenter:OptionGroupMemberships[0].OptionGroupName,
-				OptionParamenterStatus:OptionGroupMemberships[0].Status,
-				DBParameter:DBParameterGroups[0].DBParameterGroupName,
-				DBParamenterStatus:DBParameterGroups[0].ParameterApplyStatus,
-				VpcID:DBSubnetGroup.VpcId,
-				SubnetName:DBSubnetGroup.DBSubnetGroupName,
-				RdsEndpoint:Endpoint.Address,
-				RdsPort:Endpoint.Port,
-				InstanceARN:DBInstanceArn,
-				CreatedAt:InstanceCreateTime,
-				CanBeRestoredUntil:LatestRestorableTime
-			}' --output $OUTPUT --region $REGION --profile $PROFILE"
-			eval "$QUERY01"
-		
-			# Query to get the TAGS for the RDS
-			QUERY02="aws rds list-tags-for-resource --resource-name $ARN --output $OUTPUT --region $REGION --profile $PROFILE"
-			eval "$QUERY02"
-		fi
-	done
+	    # Query to list the RDS information
+		QUERY01="aws rds describe-db-instances --query 'DBInstances[?DBInstanceIdentifier==\`$RDS\`].{
+			InstanceName:DBInstanceIdentifier,
+			Status:DBInstanceStatus,
+			RdsEngine:Engine,
+			RdsVersion:EngineVersion,
+			MultiAZ:MultiAZ,
+			AZ:AvailabilityZone,
+			Storage:StorageType,
+			Size:AllocatedStorage,
+			OptionParamenter:OptionGroupMemberships[0].OptionGroupName,
+			OptionParamenterStatus:OptionGroupMemberships[0].Status,
+			DBParameter:DBParameterGroups[0].DBParameterGroupName,
+			DBParamenterStatus:DBParameterGroups[0].ParameterApplyStatus,
+			VpcID:DBSubnetGroup.VpcId,
+			SubnetName:DBSubnetGroup.DBSubnetGroupName,
+			RdsEndpoint:Endpoint.Address,
+			RdsPort:Endpoint.Port,
+			InstanceARN:DBInstanceArn,
+			CreatedAt:InstanceCreateTime,
+			CanBeRestoredUntil:LatestRestorableTime
+		}' --output $OUTPUT --region $REGION --profile $PROFILE"
+		eval "$QUERY01"
+	
+		# Query to get the TAGS for the RDS
+		QUERY02="aws rds list-tags-for-resource --resource-name $ARN --output $OUTPUT --region $REGION --profile $PROFILE"
+		eval "$QUERY02"
+	fi
 done
-
+echo ""
+echo "End of the search!"

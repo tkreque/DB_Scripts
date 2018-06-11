@@ -78,6 +78,7 @@ if [ "$INSTANCE" ];then
 			Status:DBInstanceStatus,
 			RdsEngine:Engine,
 			RdsVersion:EngineVersion,
+			RdsClass:DBInstanceClass,
 			MultiAZ:MultiAZ,
 			AZ:AvailabilityZone,
 			Storage:StorageType,
